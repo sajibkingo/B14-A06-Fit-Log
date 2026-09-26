@@ -25,22 +25,49 @@ export default function MyPlanPage() {
         return () => clearTimeout(timer);
     }, []);
 
+    // Helper to extract calorie value regardless of API naming convention
+    const extractCalories = (item) => {
+        const val =
+            item.calories ??
+            item.caloriesBurned ??
+            item.calorie ??
+            item.kcal ??
+            0;
+        return Number(val) || 0;
+    };
+
+    // Helper to extract duration value
+    const extractDuration = (item) => {
+        const val =
+            item.duration ??
+            item.durationMinutes ??
+            item.time ??
+            0;
+        return Number(val) || 0;
+    };
+
     const totalExercises = todayPlan.length;
     const totalMinutes = todayPlan.reduce(
-        (sum, item) => sum + (Number(item.duration) || 0),
+        (sum, item) => sum + extractDuration(item),
         0
     );
     const totalCalories = todayPlan.reduce(
-        (sum, item) => sum + (Number(item.calories) || 0),
+        (sum, item) => sum + extractCalories(item),
         0
     );
 
     const currentList = activeTab === "plan" ? todayPlan : savedWorkouts;
 
     const sortedList = [...currentList].sort((a, b) => {
-        if (sortBy === "duration") return (a.duration || 0) - (b.duration || 0);
-        if (sortBy === "calories") return (b.calories || 0) - (a.calories || 0);
-        if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+        if (sortBy === "duration") {
+            return extractDuration(a) - extractDuration(b);
+        }
+        if (sortBy === "calories") {
+            return extractCalories(b) - extractCalories(a);
+        }
+        if (sortBy === "rating") {
+            return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+        }
         return 0;
     });
 

@@ -6,6 +6,21 @@ import Image from "next/image";
 export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab }) {
     const workoutId = workout._id || workout.id;
 
+    const calories =
+        workout.calories ??
+        workout.caloriesBurned ??
+        workout.calorie ??
+        workout.kcal ??
+        0;
+
+    const duration =
+        workout.duration ??
+        workout.durationMinutes ??
+        workout.time ??
+        0;
+
+    const rating = workout.rating ?? "4.8";
+
     return (
         <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-5 hover:border-neutral-700 transition-colors">
             <div className="flex items-center gap-4 w-full md:w-auto">
@@ -44,14 +59,14 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                                 <circle cx="12" cy="12" r="10" />
                                 <polyline points="12 6 12 12 16 14" />
                             </svg>
-                            {workout.duration} min
+                            {duration} min
                         </span>
 
                         <span className="flex items-center gap-1.5">
                             <svg className="w-3.5 h-3.5 fill-current text-neutral-400" viewBox="0 0 24 24">
                                 <path d="M12 2c-3 4-6 7.5-6 11a6 6 0 0 0 12 0c0-3.5-3-7-6-11z" />
                             </svg>
-                            {workout.calories} kcal
+                            {calories} kcal
                         </span>
 
                         <span className="flex items-center gap-1.5">
@@ -63,7 +78,7 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                             >
                                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                             </svg>
-                            {workout.rating}
+                            {rating}
                         </span>
                     </div>
                 </div>
