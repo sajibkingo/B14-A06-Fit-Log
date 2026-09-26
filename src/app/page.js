@@ -1,12 +1,11 @@
-import Navbar from '@/components/Navbar';
-import React from 'react';
+import Hero from "@/components/Hero";
 
-const page = () => {
+export default function HomePage() {
   return (
     <div>
-
+      <Hero />
+      <section id="library" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      </section>
     </div>
   );
-};
-
-export default page;
+}
