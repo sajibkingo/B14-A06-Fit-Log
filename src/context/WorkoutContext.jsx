@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-// import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const WorkoutContext = createContext(null);
 
@@ -31,8 +31,8 @@ export function WorkoutProvider({ children }) {
     }, [todayPlan, savedWorkouts, mounted]);
 
     const addToPlan = (workout) => {
-        if (todayPlan.some((item) => item.id === workout.id)) {
-            toast.error("Already in today's plan!");
+        if (todayPlan.some((item) => String(item._id || item.id) === String(workout._id || workout.id))) {
+            toast.warn("Workout is already in today's plan!");
             return;
         }
         if (todayPlan.length >= 5) {
@@ -40,35 +40,45 @@ export function WorkoutProvider({ children }) {
             return;
         }
         setTodayPlan((prev) => [...prev, { ...workout, isDone: false }]);
-        toast.success("Added to today's plan");
+        toast.success("Added to today's plan!");
     };
 
     const saveForLater = (workout) => {
-        if (savedWorkouts.some((item) => item.id === workout.id)) {
-            toast.error("Already in saved lifts!");
+        if (savedWorkouts.some((item) => String(item._id || item.id) === String(workout._id || workout.id))) {
+            toast.warn("Workout is already saved for later!");
             return;
         }
         setSavedWorkouts((prev) => [...prev, workout]);
-        toast.success("Saved for later");
+        toast.success("Saved for later!");
     };
 
     const removeFromPlan = (id) => {
-        setTodayPlan((prev) => prev.filter((item) => item.id !== id));
-        toast.success("Removed from plan");
+        const itemToRemove = todayPlan.find((item) => String(item._id || item.id) === String(id));
+        setTodayPlan((prev) => prev.filter((item) => String(item._id || item.id) !== String(id)));
+        toast.info(`${itemToRemove?.name || "Workout"} removed from today's plan`);
     };
 
     const removeFromSaved = (id) => {
-        setSavedWorkouts((prev) => prev.filter((item) => item.id !== id));
-        toast.success("Removed from saved");
+        const itemToRemove = savedWorkouts.find((item) => String(item._id || item.id) === String(id));
+        setSavedWorkouts((prev) => prev.filter((item) => String(item._id || item.id) !== String(id)));
+        toast.info(`${itemToRemove?.name || "Workout"} removed from saved`);
     };
 
     const markAsDone = (id) => {
         setTodayPlan((prev) =>
-            prev.map((item) =>
-                item.id === id ? { ...item, isDone: !item.isDone } : item
-            )
+            prev.map((item) => {
+                if (String(item._id || item.id) === String(id)) {
+                    const nextState = !item.isDone;
+                    if (nextState) {
+                        toast.success(`Completed: ${item.name}!`);
+                    } else {
+                        toast.info(`Marked as incomplete: ${item.name}`);
+                    }
+                    return { ...item, isDone: nextState };
+                }
+                return item;
+            })
         );
-        toast.success("Status updated!");
     };
 
     return (
