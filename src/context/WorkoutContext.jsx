@@ -10,7 +10,6 @@ export function WorkoutProvider({ children }) {
     const [savedWorkouts, setSavedWorkouts] = useState([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Safely defer reading from localStorage after full mount
     useEffect(() => {
         const initTimer = setTimeout(() => {
             try {
@@ -42,7 +41,6 @@ export function WorkoutProvider({ children }) {
         return () => clearTimeout(initTimer);
     }, []);
 
-    // Write changes to localStorage only after initial load finishes
     useEffect(() => {
         if (!isLoaded) return;
 
@@ -161,3 +159,5 @@ export function useWorkouts() {
     }
     return context;
 }
+
+export default WorkoutProvider;

@@ -4,11 +4,59 @@ import Image from "next/image";
 export default function WorkoutCard({ workout }) {
     const workoutId = workout._id || workout.id;
 
-    const categories = Array.isArray(workout.categories)
-        ? workout.categories
-        : workout.category
-            ? [workout.category]
-            : [];
+    // Comprehensive category & muscle group extractor
+    const getCategories = (item) => {
+        const raw =
+            item.muscleGroups ||
+            item.muscles ||
+            item.muscle ||
+            item.targetMuscles ||
+            item.targetMuscle ||
+            item.primaryMuscles ||
+            item.primaryMuscle ||
+            item.categories ||
+            item.category ||
+            item.tags ||
+            item.bodyPart;
+
+        if (Array.isArray(raw)) {
+            return raw.map((val) => (typeof val === "object" ? val.name || "" : String(val)));
+        }
+
+        if (typeof raw === "string" && raw.trim().length > 0) {
+            return raw.includes(",")
+                ? raw.split(",").map((s) => s.trim())
+                : [raw.trim()];
+        }
+
+        // Fallback: Infer muscle group from common exercise names if API left it empty
+        const nameLower = (item.name || "").toLowerCase();
+        if (nameLower.includes("bench") || nameLower.includes("chest") || nameLower.includes("push-up")) return ["CHEST", "ARMS"];
+        if (nameLower.includes("squat") || nameLower.includes("lunge") || nameLower.includes("leg")) return ["LEGS"];
+        if (nameLower.includes("deadlift") || nameLower.includes("pull-up") || nameLower.includes("row")) return ["BACK"];
+        if (nameLower.includes("curl") || nameLower.includes("tricep") || nameLower.includes("dip")) return ["ARMS"];
+        if (nameLower.includes("press") || nameLower.includes("deltoid")) return ["SHOULDERS", "ARMS"];
+        if (nameLower.includes("plank") || nameLower.includes("twist") || nameLower.includes("crunch") || nameLower.includes("abs")) return ["CORE"];
+
+        return ["FULL BODY"];
+    };
+
+    const categories = getCategories(workout);
+
+    const calories =
+        workout.calories ??
+        workout.caloriesBurned ??
+        workout.calorie ??
+        workout.kcal ??
+        0;
+
+    const duration =
+        workout.duration ??
+        workout.durationMinutes ??
+        workout.time ??
+        0;
+
+    const rating = workout.rating ?? "4.8";
 
     return (
         <Link
@@ -19,7 +67,7 @@ export default function WorkoutCard({ workout }) {
                 {workout.image ? (
                     <Image
                         src={workout.image}
-                        alt={workout.name}
+                        alt={workout.name || "Workout"}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -33,6 +81,7 @@ export default function WorkoutCard({ workout }) {
 
             <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
+                    {/* Category Tag Pills */}
                     <div className="flex flex-wrap gap-2 mb-3">
                         {categories.map((cat, idx) => (
                             <span
@@ -64,7 +113,7 @@ export default function WorkoutCard({ workout }) {
                             <circle cx="12" cy="12" r="10" />
                             <polyline points="12 6 12 12 16 14" />
                         </svg>
-                        <span>{workout.duration} min</span>
+                        <span>{duration} min</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -74,7 +123,7 @@ export default function WorkoutCard({ workout }) {
                         >
                             <path d="M12 2c-3 4-6 7.5-6 11a6 6 0 0 0 12 0c0-3.5-3-7-6-11z" />
                         </svg>
-                        <span>{workout.calories} kcal</span>
+                        <span>{calories} kcal</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -86,7 +135,7 @@ export default function WorkoutCard({ workout }) {
                         >
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                         </svg>
-                        <span>{workout.rating}</span>
+                        <span>{rating}</span>
                     </div>
                 </div>
             </div>

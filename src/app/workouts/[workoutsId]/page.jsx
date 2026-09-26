@@ -17,7 +17,9 @@ export default function WorkoutDetailPage({ params }) {
     useEffect(() => {
         async function fetchWorkout() {
             try {
-                const res = await fetch("https://api.abcz.workers.dev/api/fitlog");
+                const res = await fetch("https://api.abcz.workers.dev/api/fitlog", {
+                    cache: "no-store",
+                });
                 const json = await res.json();
                 const data = Array.isArray(json) ? json : json.data || [];
                 const found = data.find(
@@ -25,12 +27,15 @@ export default function WorkoutDetailPage({ params }) {
                 );
                 setWorkout(found || null);
             } catch (err) {
-                console.error(err);
+                console.error("Failed to load workout:", err);
             } finally {
                 setLoading(false);
             }
         }
-        fetchWorkout();
+
+        if (workoutsId) {
+            fetchWorkout();
+        }
     }, [workoutsId]);
 
     if (loading) {
@@ -67,17 +72,70 @@ export default function WorkoutDetailPage({ params }) {
         );
     }
 
-    const categories = Array.isArray(workout.categories)
-        ? workout.categories
-        : workout.category
-            ? [workout.category]
-            : [];
+    // Safe tag extraction
+    const getCategories = (item) => {
+        const raw =
+            item.muscleGroups ||
+            item.muscles ||
+            item.muscle ||
+            item.targetMuscles ||
+            item.targetMuscle ||
+            item.primaryMuscles ||
+            item.primaryMuscle ||
+            item.categories ||
+            item.category ||
+            item.tags ||
+            item.bodyPart;
+
+        if (Array.isArray(raw)) {
+            return raw.map((val) =>
+                typeof val === "object" ? val.name || "" : String(val)
+            );
+        }
+
+        if (typeof raw === "string" && raw.trim().length > 0) {
+            return raw.includes(",")
+                ? raw.split(",").map((s) => s.trim())
+                : [raw.trim()];
+        }
+
+        const nameLower = (item.name || "").toLowerCase();
+        if (nameLower.includes("bench") || nameLower.includes("chest") || nameLower.includes("push-up"))
+            return ["CHEST", "ARMS"];
+        if (nameLower.includes("squat") || nameLower.includes("lunge") || nameLower.includes("leg"))
+            return ["LEGS"];
+        if (nameLower.includes("deadlift") || nameLower.includes("pull-up") || nameLower.includes("row"))
+            return ["BACK"];
+        if (nameLower.includes("curl") || nameLower.includes("tricep") || nameLower.includes("dip"))
+            return ["ARMS"];
+        if (nameLower.includes("press") || nameLower.includes("deltoid"))
+            return ["SHOULDERS", "ARMS"];
+        if (nameLower.includes("plank") || nameLower.includes("twist") || nameLower.includes("crunch") || nameLower.includes("abs"))
+            return ["CORE"];
+
+        return ["FULL BODY"];
+    };
+
+    const categories = getCategories(workout);
+
+    const caloriesValue =
+        workout.calories ??
+        workout.caloriesBurned ??
+        workout.calorie ??
+        workout.kcal ??
+        0;
+
+    const durationValue =
+        workout.duration ??
+        workout.durationMinutes ??
+        workout.time ??
+        0;
 
     const defaultInstructions = [
         "Lie on the bench with eyes under the bar and feet planted.",
         "Unrack with locked elbows and lower the bar to mid-chest.",
         "Press up in a slight arc until elbows lock without bouncing.",
-        "Keep shoulder blades pinched and a natural arch in the back."
+        "Keep shoulder blades pinched and a natural arch in the back.",
     ];
 
     const instructions =
@@ -90,21 +148,21 @@ export default function WorkoutDetailPage({ params }) {
         { label: "DIFFICULTY", value: workout.difficulty || "Intermediate" },
         { label: "SETS", value: workout.sets || "4" },
         { label: "REPS", value: workout.reps || "6-8" },
-        { label: "DURATION", value: `${workout.duration} min` },
-        { label: "CALORIES", value: `${workout.calories} kcal` },
+        { label: "DURATION", value: `${durationValue} min` },
+        { label: "CALORIES", value: `${caloriesValue} kcal` },
         { label: "RATING", value: workout.rating || "4.8" },
     ];
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
-
+                {/* Left: Image */}
                 <div className="lg:col-span-6 w-full">
                     <div className="relative w-full aspect-[4/5] bg-[#121418] border border-neutral-800/80 rounded-3xl overflow-hidden shadow-2xl">
                         {workout.image ? (
                             <Image
                                 src={workout.image}
-                                alt={workout.name}
+                                alt={workout.name || "Workout"}
                                 fill
                                 priority
                                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -118,6 +176,7 @@ export default function WorkoutDetailPage({ params }) {
                     </div>
                 </div>
 
+                {/* Right: Info */}
                 <div className="lg:col-span-6 flex flex-col">
                     <h1 className="font-[family-name:var(--font-oswald)] text-4xl sm:text-5xl font-bold uppercase tracking-wide text-white leading-tight mb-3">
                         {workout.name}
@@ -125,16 +184,16 @@ export default function WorkoutDetailPage({ params }) {
 
                     <p className="text-neutral-400 text-xs sm:text-sm leading-relaxed mb-5">
                         {workout.description ||
-                            "A compound press that builds chest thickness, triceps, and pressing power from a stable bench."}
+                            "A compound exercise designed to build muscle mass, increase total body work capacity, and reinforce mechanical strength."}
                     </p>
 
                     <div className="flex flex-wrap gap-2 mb-8">
                         {categories.map((cat, idx) => (
                             <span
                                 key={idx}
-                                className="bg-[#ccff00] text-black text-xs font-bold capitalize px-3.5 py-1 rounded-full"
+                                className="bg-[#ccff00] text-black text-xs font-bold uppercase px-3.5 py-1 rounded-full"
                             >
-                                {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase()}
+                                {cat}
                             </span>
                         ))}
                     </div>
@@ -142,7 +201,10 @@ export default function WorkoutDetailPage({ params }) {
                     <div className="bg-[#121418] border border-neutral-800/70 rounded-2xl p-5 mb-8">
                         <div className="divide-y divide-neutral-800/60">
                             {specs.map((spec, i) => (
-                                <div key={i} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                                <div
+                                    key={i}
+                                    className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0"
+                                >
                                     <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
                                         {spec.label}
                                     </span>
@@ -161,7 +223,9 @@ export default function WorkoutDetailPage({ params }) {
                         <ol className="space-y-2.5 text-xs sm:text-sm text-neutral-400 leading-relaxed list-none">
                             {instructions.slice(0, 4).map((step, idx) => (
                                 <li key={idx} className="flex gap-2">
-                                    <span className="text-neutral-400 font-medium shrink-0">{idx + 1}.</span>
+                                    <span className="text-neutral-400 font-medium shrink-0">
+                                        {idx + 1}.
+                                    </span>
                                     <span>{step}</span>
                                 </li>
                             ))}
@@ -202,9 +266,7 @@ export default function WorkoutDetailPage({ params }) {
                             <span>Save for later</span>
                         </button>
                     </div>
-
                 </div>
-
             </div>
         </div>
     );
