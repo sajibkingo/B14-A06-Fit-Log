@@ -7,14 +7,9 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
     const workoutId = workout._id || workout.id;
 
     return (
-        <div
-            className={`bg-[#121418] border rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-5 transition-all ${workout.isDone
-                    ? "border-emerald-500/50 bg-[#0e1612]"
-                    : "border-[#1f232b] hover:border-neutral-700"
-                }`}
-        >
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-[#1a1d24] rounded-xl overflow-hidden shrink-0">
+        <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-5 hover:border-neutral-700 transition-colors">
+            <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="relative w-28 h-20 sm:w-32 sm:h-20 bg-[#1a1d24] rounded-xl overflow-hidden shrink-0">
                     {workout.image ? (
                         <Image
                             src={workout.image}
@@ -24,7 +19,7 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-neutral-600 text-xs">
-                            No image
+                            No preview
                         </div>
                     )}
                 </div>
@@ -38,38 +33,35 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                     </h3>
                     <p className="text-neutral-400 text-xs mt-0.5">{workout.equipment}</p>
 
-                    <div className="flex items-center gap-4 mt-3 text-neutral-400 text-xs">
-                        <span className="flex items-center gap-1">
+                    <div className="flex items-center gap-4 mt-2 text-neutral-400 text-xs">
+                        <span className="flex items-center gap-1.5">
                             <svg
-                                className="w-3.5 h-3.5"
+                                className="w-3.5 h-3.5 stroke-[2] text-neutral-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
                             >
-                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                                <polyline points="12 6 12 12 16 14" strokeWidth="2" />
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
                             </svg>
                             {workout.duration} min
                         </span>
 
-                        <span className="flex items-center gap-1">
-                            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 fill-current text-neutral-400" viewBox="0 0 24 24">
                                 <path d="M12 2c-3 4-6 7.5-6 11a6 6 0 0 0 12 0c0-3.5-3-7-6-11z" />
                             </svg>
                             {workout.calories} kcal
                         </span>
 
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                             <svg
-                                className="w-3.5 h-3.5"
+                                className="w-3.5 h-3.5 stroke-[2] text-neutral-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
                             >
-                                <polygon
-                                    strokeWidth="2"
-                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                                />
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                             </svg>
                             {workout.rating}
                         </span>
@@ -77,10 +69,10 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                 </div>
             </div>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-[#1f232b]">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end pt-3 md:pt-0 border-t md:border-t-0 border-[#1f232b]">
                 <Link
                     href={`/workouts/${workoutId}`}
-                    className="btn btn-sm bg-[#1a1d24] hover:bg-[#252a34] text-neutral-200 border border-neutral-700 text-xs font-bold uppercase rounded-lg"
+                    className="btn btn-sm bg-[#171a20] hover:bg-[#20242c] text-neutral-300 border border-neutral-700/80 rounded-full px-4 text-xs font-semibold normal-case"
                 >
                     View Details
                 </Link>
@@ -88,11 +80,10 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                 {isPlanTab && onToggleDone && (
                     <button
                         onClick={() => onToggleDone(workoutId)}
-                        className={`btn btn-sm btn-circle border-none ${workout.isDone
+                        className={`btn btn-sm rounded-full px-4 text-xs font-bold border-none flex items-center gap-1.5 normal-case ${workout.isDone
                                 ? "bg-emerald-500 text-black hover:bg-emerald-400"
-                                : "bg-[#1a1d24] hover:bg-[#252a34] text-neutral-300 border border-neutral-700"
+                                : "bg-[#ccff00] hover:bg-[#b8e600] text-black"
                             }`}
-                        title={workout.isDone ? "Completed" : "Mark as Done"}
                     >
                         <svg
                             className="w-4 h-4 stroke-[3]"
@@ -102,16 +93,17 @@ export default function PlanCard({ workout, onRemove, onToggleDone, isPlanTab })
                         >
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
+                        <span>{workout.isDone ? "Done" : "Mark as Done"}</span>
                     </button>
                 )}
 
                 <button
                     onClick={() => onRemove(workoutId)}
-                    className="btn btn-sm btn-circle bg-[#1a1d24] hover:bg-rose-950/40 text-neutral-400 hover:text-rose-400 border border-neutral-700 hover:border-rose-900/60"
+                    className="p-1 text-neutral-500 hover:text-neutral-200 transition-colors"
                     title="Remove"
                 >
                     <svg
-                        className="w-4 h-4 stroke-[2.5]"
+                        className="w-4 h-4 stroke-[2]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useWorkouts } from "@/context/WorkoutContext";
 import PlanCard from "@/components/PlanCard";
 
 export default function MyPlanPage() {
     const [activeTab, setActiveTab] = useState("plan");
+    const [sortBy, setSortBy] = useState("duration");
+    const [loading, setLoading] = useState(true);
+
     const {
         todayPlan,
         savedWorkouts,
@@ -15,6 +18,14 @@ export default function MyPlanPage() {
         markAsDone,
     } = useWorkouts();
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const totalExercises = todayPlan.length;
     const totalMinutes = todayPlan.reduce(
         (sum, item) => sum + (Number(item.duration) || 0),
         0
@@ -24,94 +35,113 @@ export default function MyPlanPage() {
         0
     );
 
-    const displayList = activeTab === "plan" ? todayPlan : savedWorkouts;
+    const currentList = activeTab === "plan" ? todayPlan : savedWorkouts;
+
+    const sortedList = [...currentList].sort((a, b) => {
+        if (sortBy === "duration") return (a.duration || 0) - (b.duration || 0);
+        if (sortBy === "calories") return (b.calories || 0) - (a.calories || 0);
+        if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+        return 0;
+    });
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
             <div className="mb-8">
                 <h1 className="font-[family-name:var(--font-oswald)] text-4xl sm:text-5xl font-bold uppercase tracking-wide text-white">
                     MY PLAN
                 </h1>
-                <p className="text-neutral-400 text-sm mt-1">
+                <p className="text-neutral-400 text-xs sm:text-sm mt-1">
                     Cap of five lifts for today. Finish them, then load more.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-5">
-                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+            <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-6 sm:p-8 mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:divide-x sm:divide-[#1f232b]">
+                <div>
+                    <p className="text-xs font-semibold text-neutral-400 mb-1">
                         Exercises
                     </p>
-                    <p className="font-[family-name:var(--font-oswald)] text-3xl font-bold text-white mt-1">
-                        {todayPlan.length} <span className="text-xs text-neutral-500 font-normal">/ 5 max</span>
+                    <p className="font-[family-name:var(--font-oswald)] text-4xl sm:text-5xl font-bold text-[#ccff00]">
+                        {totalExercises}
                     </p>
                 </div>
 
-                <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-5">
-                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                <div className="sm:pl-8">
+                    <p className="text-xs font-semibold text-neutral-400 mb-1">
                         Minutes
                     </p>
-                    <p className="font-[family-name:var(--font-oswald)] text-3xl font-bold text-[#ccff00] mt-1">
+                    <p className="font-[family-name:var(--font-oswald)] text-4xl sm:text-5xl font-bold text-white">
                         {totalMinutes}
                     </p>
                 </div>
 
-                <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-5">
-                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                <div className="sm:pl-8">
+                    <p className="text-xs font-semibold text-neutral-400 mb-1">
                         Calories
                     </p>
-                    <p className="font-[family-name:var(--font-oswald)] text-3xl font-bold text-white mt-1">
-                        {totalCalories} <span className="text-xs text-neutral-500 font-normal">kcal</span>
+                    <p className="font-[family-name:var(--font-oswald)] text-4xl sm:text-5xl font-bold text-white">
+                        {totalCalories}
                     </p>
                 </div>
             </div>
 
-            <div className="flex border-b border-[#1f232b] mb-6">
-                <button
-                    onClick={() => setActiveTab("plan")}
-                    className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === "plan"
-                            ? "text-[#ccff00]"
-                            : "text-neutral-400 hover:text-white"
-                        }`}
-                >
-                    Today&apos;s Plan ({todayPlan.length})
-                    {activeTab === "plan" && (
-                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#ccff00]" />
-                    )}
-                </button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center bg-[#101216] border border-[#1f232b] p-1 rounded-xl w-fit">
+                    <button
+                        onClick={() => setActiveTab("plan")}
+                        className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === "plan"
+                                ? "bg-[#1f232b] text-white shadow-sm"
+                                : "text-neutral-400 hover:text-white"
+                            }`}
+                    >
+                        Today&apos;s Plan
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("saved")}
+                        className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === "saved"
+                                ? "bg-[#1f232b] text-white shadow-sm"
+                                : "text-neutral-400 hover:text-white"
+                            }`}
+                    >
+                        Saved
+                    </button>
+                </div>
 
-                <button
-                    onClick={() => setActiveTab("saved")}
-                    className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === "saved"
-                            ? "text-[#ccff00]"
-                            : "text-neutral-400 hover:text-white"
-                        }`}
-                >
-                    Saved ({savedWorkouts.length})
-                    {activeTab === "saved" && (
-                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#ccff00]" />
-                    )}
-                </button>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <span className="text-xs text-neutral-400">Sort By</span>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="select select-sm bg-[#121418] border-[#1f232b] text-xs text-neutral-200 rounded-lg focus:outline-none focus:border-neutral-600"
+                    >
+                        <option value="duration">Duration</option>
+                        <option value="calories">Calories</option>
+                        <option value="rating">Rating</option>
+                    </select>
+                </div>
             </div>
 
-            {displayList.length === 0 ? (
-                <div className="bg-[#121418] border border-[#1f232b] rounded-2xl p-12 text-center my-6">
-                    <h3 className="font-[family-name:var(--font-oswald)] text-2xl font-bold uppercase tracking-wider text-white mb-2">
+            {loading ? (
+                <div className="py-20 text-center text-sm text-neutral-500">
+                    Loading workouts…
+                </div>
+            ) : sortedList.length === 0 ? (
+                <div className="border border-dashed border-[#1f232b] rounded-2xl p-16 text-center my-4">
+                    <h3 className="font-[family-name:var(--font-oswald)] text-2xl font-bold uppercase tracking-wide text-white mb-2">
                         NOTHING HERE YET
                     </h3>
-                    <p className="text-neutral-400 text-sm mb-6 max-w-sm mx-auto">
+                    <p className="text-neutral-400 text-xs sm:text-sm mb-6 max-w-sm mx-auto">
                         Browse the library and add a lift to get today moving.
                     </p>
                     <Link
                         href="/"
-                        className="btn bg-[#ccff00] hover:bg-[#b5e600] text-black font-extrabold uppercase px-6 border-none text-xs rounded-lg"
+                        className="inline-block bg-[#ccff00] hover:bg-[#b8e600] text-black font-extrabold uppercase text-xs px-6 py-3 rounded-full transition-transform active:scale-95"
                     >
                         Go to workouts
                     </Link>
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {displayList.map((workout) => (
+                    {sortedList.map((workout) => (
                         <PlanCard
                             key={workout._id || workout.id}
                             workout={workout}

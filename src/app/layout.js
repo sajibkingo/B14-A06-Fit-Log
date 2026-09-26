@@ -2,7 +2,7 @@ import { Oswald, Inter } from "next/font/google";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "@/components/Navbar";
-// import Footer from "@/components/Footer";
+import Footer from "@/components/Footer";
 import { WorkoutProvider } from "@/context/WorkoutContext";
 import { ToastContainer } from "react-toastify";
 
@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
           />
           <Navbar />
           <main className="flex-1">{children}</main>
-          {/* <Footer /> */}
+          <Footer />
         </WorkoutProvider>
       </body>
     </html>
